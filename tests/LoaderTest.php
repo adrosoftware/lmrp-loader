@@ -41,4 +41,35 @@ class LoaderTest extends TestCase
             $this->assertTrue(in_array($file, $loaded));
         }
     }
+
+    public function testPrefixingFiles()
+    {
+        $dir = __DIR__ . DIRECTORY_SEPARATOR;
+        $loader = new Loader($dir . 'config/prefix/routes.*.php');
+
+        /**
+         * Dummy variables.
+         */
+        $app = $this->getMockBuilder(\Mezzio\Application::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $factory = $this->getMockBuilder(\Mezzio\MiddlewareFactory::class)
+             ->disableOriginalConstructor()
+            ->getMock();
+        $container = $this->getMockBuilder(\Psr\Container\ContainerInterface::class)
+            ->getMock();
+
+        $loader->prefix($app, $factory, $container);
+
+        $loaded = get_required_files();
+
+        $files = [
+            'config/prefix/routes.api.php',
+        ];
+
+        foreach ($files as $file) {
+            $file = $dir . $file;
+            $this->assertTrue(in_array($file, $loaded));
+        }
+    }
 }

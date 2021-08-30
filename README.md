@@ -7,7 +7,7 @@
 
 ## Purpose
 
-When building a medium to large applications on Laminas Mezzio is better if you can organize your routes. By default *mezzio* define all the routes in the `routes.php` file under the `config` directory. For me is better if you can at least organize the routes by modules of routes prefix. For example `routes.web.php` for all the web routes and `routes.api.php ` for al the api routes.
+When building a medium to large applications on Laminas Mezzio is better if you can organize your routes. By default *mezzio* define all the routes in the `routes.php` file under the `config` directory. For me is better if you can at least organize the routes by modules of routes prefix. For example `routes.web.php` for all the web routes and `routes.api.php` for all the api routes.
 
 ## Usage
 
@@ -61,6 +61,43 @@ With something like this:
 ```php
 (new \AdroSoftware\Lmrp\Loader('config/routes.*.php'))->load($app, $factory, $container);
 ```
+
+## Prefixing routes.
+
+Since version 1.1 now you can use the name of the file to prefix the routes inside them. We create and inject a `Prefixer` class that behind the scenes uses the `\Mezzio\Application $app` to generate the routes. 
+
+For example let say you have `routes.web.php` and `routes.api.php`, in your `index.php` you use the `prefix` method instead of the `load` one, like this:
+
+```php
+(new \AdroSoftware\Lmrp\Loader('config/routes.*.php'))->prefix($app, $factory, $container);
+```
+
+Then in your `routes.web.php` and `routes.api.php` you replace the definition of the anonymous function from 
+
+```php
+return static function (Application $app, MiddlewareFactory $factory, ContainerInterface $container): void
+```
+
+to 
+
+```php
+return static function (Application $app, MiddlewareFactory $factory, ContainerInterface $container, \AdroSoftware\Lmrp\Prefixer $prefixer = null): void 
+```
+
+Now you are ready to use the `$prefixer` instead of the `$app` to create the routes:
+
+```php
+// `routes.api.php`
+return static function (Application $app, MiddlewareFactory $factory, ContainerInterface $container, \AdroSoftware\Lmrp\Prefixer $prefixer = null): void {
+    $app->get('/api/', Api\Handler\HomeHandler::class, 'api.home');
+    // or
+    $prefixer->get('/', Api\Handler\HomeHandler::class, 'api.home');
+};
+```
+
+As you can see, you can avoid typing `/api` on all the routes. 
+
+> NOTE: If you don't want to prefix your route with `/api` then you can just use `\Mezzio\Application $app` normally.
 
 ## Authors:
 

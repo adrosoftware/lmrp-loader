@@ -28,6 +28,36 @@ class Loader
     }
 
     /**
+     * @return void
+     */
+    public function prefix($app, $factory, $container)
+    {
+        foreach ($this->glob($this->pattern) as $file) {
+            (require_once $file)(
+                $app,
+                $factory,
+                $container,
+                new Prefixer(
+                    $app,
+                    $this->calculatePrefix($file)
+                )
+            );
+        }
+    }
+
+    /**
+     * Calculate the prefix according to the name of the route file.
+     *
+     * @param string $file
+     * @return string
+     */
+    private function calculatePrefix(string $file): string
+    {
+        preg_match('/(.*)routes.(.*).php/', $file, $match);
+        return '/' . end($match);
+    }
+
+    /**
      * Return a set of filesystem items based on a glob pattern.
      *
      * Uses the zend-stdlib Glob class for cross-platform globbing to
